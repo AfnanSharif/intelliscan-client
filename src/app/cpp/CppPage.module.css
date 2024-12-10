@@ -1,0 +1,74 @@
+.responseContainer {
+  background-image: url('/src/images/background-call-to-action.jpg'); /* Replace with the path to your custom image */
+  background-size: cover; /* Ensures the image covers the entire container */
+  background-position: center; /* Centers the image */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+.label {
+  display: inline-block;
+  background-color: black;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 50px; /* Rounded button */
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.label:hover {
+  background-color: #3c3744;
+}
+
+.textarea {
+  border: 1px solid #ddd;
+  border-radius: 20px; /* Rounded textarea */
+  padding: 10px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.textarea:focus {
+  border-color: #3066be;
+  outline: none;
+  box-shadow: 0 0 5px rgba(48, 102, 190, 0.5);
+}
+
+.analyzing {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 20px;
+  color: #3066be;
+}
+
+.analyzingContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.dot {
+  height: 10px;
+  width: 10px;
+  margin: 0 3px;
+  background-color: #3066be;
+  border-radius: 50%;
+  animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-10px);
+  }
+}

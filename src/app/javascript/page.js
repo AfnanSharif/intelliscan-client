@@ -4,14 +4,15 @@ import { useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from './JsPage.module.css'; // Adjust the import as necessary
-import BackgroundImage from "@/images/background-call-to-action.jpg"
+import BackgroundImage from "@/images/background-call-to-action.jpg";
 
-export default function CppPage() {
+export default function JsPage() {
   const [file, setFile] = useState(null);
   const [codeSnippet, setCodeSnippet] = useState('');
   const [response, setResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [fileName, setFileName] = useState(''); // State for storing the filename
+  const [pdfUrl, setPdfUrl] = useState(null); // State for storing the PDF URL
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -35,9 +36,10 @@ export default function CppPage() {
     }
 
     setIsLoading(true); // Set loading to true when submission starts
+    setPdfUrl(null); // Reset PDF URL
 
     try {
-      const res = await fetch('http://localhost:8002/analyze/', {
+      const res = await fetch('http://139.59.11.29:8001/analyze/', {
         method: 'POST',
         body: formData,
       });
@@ -49,10 +51,12 @@ export default function CppPage() {
       const data = await res.text();
       setResponse(data);
 
-      // Extract the filename from the response if needed
-      const match = data.match(/<a href="\/download\/(.*?)">Download PDF Report<\/a>/);
+      // Extract the filename from the response and generate the PDF URL
+      const match = data.match(/\/download\/(.*?)"/);
       if (match && match[1]) {
-        setFileName(match[1]); // Set the dynamic filename
+        const extractedFileName = match[1];
+        setFileName(extractedFileName);
+        setPdfUrl(`http://139.59.11.29:8001/download/${extractedFileName}`);
       }
     } catch (error) {
       setResponse(`Error: ${error.message}`);
@@ -62,10 +66,10 @@ export default function CppPage() {
   };
 
   const handleDownload = async () => {
-    if (!fileName) return;
+    if (!pdfUrl) return;
 
     try {
-      const response = await fetch(`http://localhost:8002/download/${fileName}`);
+      const response = await fetch(pdfUrl);
       if (!response.ok) {
         throw new Error('Failed to download report');
       }
@@ -86,7 +90,7 @@ export default function CppPage() {
 
   return (
     <div className='relative'>
-            <Image
+      <Image
         className="absolute inset-0 w-full h-full object-cover z-[-1]"
         src={BackgroundImage}
         alt="Background"
@@ -95,18 +99,15 @@ export default function CppPage() {
         style={{ filter: "blur(20px)" }}
       />
       <Head>
-        <title>Check Js Plagiarism</title>
+        <title>Check JavaScript Plagiarism</title>
       </Head>
-      <div className="flex flex-col items-center justify-center min-h-screen  p-4 gap-4">
-        {/* <div className="mb-4">
-          <Image src="/intelliscan-logo-unscreen.gif" alt="IntelliScan Logo" width={150} height={50} />
-        </div> */}
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 gap-4">
         <h1 className="text-5xl font-bold mb-8" style={{ fontFamily: "Arial, sans-serif" }}>
-            <div className="bg-white py-3 px-6 rounded-full shadow-lg flex justify-center items-center">
-              <span className="text-gray-800 font-bold">Check JavaScript</span>
-              <span className="text-blue-800 font-bold">Plagiarism</span>
-            </div>
-          </h1>
+          <div className="bg-white py-3 px-6 rounded-full shadow-lg flex justify-center items-center">
+            <span className="text-gray-800 font-bold">Check JavaScript</span>
+            <span className="text-blue-800 font-bold">Plagiarism</span>
+          </div>
+        </h1>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4 w-full max-w-md">
           <label htmlFor="file-upload" className={styles.label}>
             Choose File
@@ -118,16 +119,16 @@ export default function CppPage() {
             onChange={handleFileChange}
             className={styles.hiddenFileInput} // Use the new class here
           />
-          {fileName && <div className="text-gray-700">Selected File: {fileName}</div>} {/* Display the selected file name */}
+          {fileName && <div className="text-gray-700">Selected File: {fileName}</div>}
           <textarea
             value={codeSnippet}
             onChange={handleSnippetChange}
-            placeholder="Paste your C++ code snippet here..."
+            placeholder="Paste your JavaScript code snippet here..."
             className={styles.textarea}
           />
           <button
             type="submit"
-            className="bg-black text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-[#3c3744]  transition duration-300"
+            className="bg-black text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-[#3c3744] transition duration-300"
           >
             Submit
           </button>
@@ -145,7 +146,7 @@ export default function CppPage() {
         {response && (
           <div className={styles.responseContainer}>
             <div dangerouslySetInnerHTML={{ __html: response }} />
-            {fileName && (
+            {pdfUrl && (
               <button 
                 onClick={handleDownload} 
                 className="mt-4 bg-[#3066be] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-[#3c3744] transition duration-300"

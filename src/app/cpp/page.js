@@ -12,9 +12,12 @@ export default function CppPage() {
   const [response, setResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false); // New loading state
   const [fileName, setFileName] = useState(""); // State for storing the filename
+  const [pdfUrl, setPdfUrl] = useState(null); // State for storing the PDF URL
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    setFileName(selectedFile ? selectedFile.name : ""); // Set the filename
   };
 
   const handleSnippetChange = (e) => {
@@ -33,9 +36,10 @@ export default function CppPage() {
     }
 
     setIsLoading(true); // Set loading to true when submission starts
+    setPdfUrl(null); // Reset PDF URL
 
     try {
-      const res = await fetch("http://localhost:9000/analyze/", {
+      const res = await fetch("http://139.59.11.29:4000/analyze/", {
         method: "POST",
         body: formData,
       });
@@ -47,12 +51,12 @@ export default function CppPage() {
       const data = await res.text();
       setResponse(data);
 
-      // Extract the filename from the response if needed
-      const match = data.match(
-        /<a href="\/download\/(.*?)">Download PDF Report<\/a>/
-      );
+      // Extract the filename and generate the PDF URL
+      const match = data.match(/\/download\/(.*?)"/);
       if (match && match[1]) {
-        setFileName(match[1]); // Set the dynamic filename
+        const extractedFileName = match[1];
+        setFileName(extractedFileName);
+        setPdfUrl(`http://139.59.11.29:4000/download/${extractedFileName}`);
       }
     } catch (error) {
       setResponse(`Error: ${error.message}`);
@@ -62,12 +66,10 @@ export default function CppPage() {
   };
 
   const handleDownload = async () => {
-    if (!fileName) return;
+    if (!pdfUrl) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:9000/download/${fileName}`
-      );
+      const response = await fetch(pdfUrl);
       if (!response.ok) {
         throw new Error("Failed to download report");
       }
@@ -99,14 +101,20 @@ export default function CppPage() {
       <Head>
         <title>Check C++ Plagiarism</title>
       </Head>
-      <div className="relative flex flex-col items-center justify-center min-h-screen  p-4 gap-4">
-      <h1 className="text-5xl font-bold mb-8" style={{ fontFamily: "Arial, sans-serif" }}>
-            <div className="bg-white py-3 px-6 rounded-full shadow-lg flex justify-center items-center">
-              <span className="text-gray-800 font-bold">Check C++</span>
-              <span className="text-blue-800 font-bold">Plagiarism</span>
-            </div>
-          </h1>
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-4 w-full max-w-md">
+      <div className="relative flex flex-col items-center justify-center min-h-screen p-4 gap-4">
+        <h1
+          className="text-5xl font-bold mb-8"
+          style={{ fontFamily: "Arial, sans-serif" }}
+        >
+          <div className="bg-white py-3 px-6 rounded-full shadow-lg flex justify-center items-center">
+            <span className="text-gray-800 font-bold">Check C++</span>
+            <span className="text-blue-800 font-bold">Plagiarism</span>
+          </div>
+        </h1>
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col space-y-4 w-full max-w-md"
+        >
           <label htmlFor="file-upload" className={styles.label}>
             Choose File
           </label>
@@ -125,7 +133,7 @@ export default function CppPage() {
           />
           <button
             type="submit"
-            className="bg-black text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-[#3c3744]  transition duration-300"
+            className="bg-black text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-[#3c3744] transition duration-300"
           >
             Submit
           </button>
@@ -143,10 +151,10 @@ export default function CppPage() {
         {response && (
           <div className={styles.responseContainer}>
             <div dangerouslySetInnerHTML={{ __html: response }} />
-            {fileName && (
+            {pdfUrl && (
               <button
                 onClick={handleDownload}
-                className="mt-4 bg-[#3066be] text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-[#3c3744] transition duration-300"
+                className="mt-4 bg-[#3066be] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-[#3c3744] transition duration-300"
               >
                 Download Report
               </button>

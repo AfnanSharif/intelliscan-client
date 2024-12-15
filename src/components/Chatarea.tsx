@@ -15,7 +15,7 @@ const ChatComponent: React.FC = () => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const chatbotApiUrl = 'http://localhost:8000/api/query/'; // Ensure the endpoint matches your FastAPI route
+  const chatbotApiUrl = 'https://chatbot-3diqb.ondigitalocean.app/api/query'; // Ensure the endpoint matches your FastAPI route
 
   const toggleChatbox = () => {
     setIsChatboxOpen((prev) => !prev);
@@ -29,39 +29,41 @@ const ChatComponent: React.FC = () => {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-
+  
     setMessages((prevMessages) => [
       ...prevMessages,
       { role: 'user', content: input },
     ]);
-
+  
     setIsLoading(true);
     setMessages((prevMessages) => [
       ...prevMessages,
       { role: 'bot', content: 'Thinking...' },
     ]);
-
+  
     try {
       console.log('Sending request to:', chatbotApiUrl);
-
+  
       const response = await fetch(chatbotApiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: input }),
+        body: JSON.stringify({ 
+          query: input,  // Only send the query, no index_name
+        }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || 'Network response was not ok');
       }
-
+  
       const data = await response.json();
       console.log('Response from server:', data);
-
+  
       const botResponse = data.response || "I'm having trouble generating a response.";
-
+  
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages];
         updatedMessages[updatedMessages.length - 1] = { role: 'bot', content: botResponse };
@@ -77,12 +79,11 @@ const ChatComponent: React.FC = () => {
         };
         return updatedMessages;
       });
-      alert(`Oops! Something went wrong: ${error.message}`);
+      // alert(Oops! Something went wrong: ${error.message});
     } finally {
       setIsLoading(false);
       setInput('');
-    }
-  };
+}};
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && !isLoading) {

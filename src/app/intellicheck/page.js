@@ -42,7 +42,7 @@ export default function UploadPage() {
     setLoading(true); // Start loading
 
     try {
-      const intellicheckApiUrl = process.env.NEXT_PUBLIC_INTELLICHECK_URL; // Accessing environment variable
+      const intellicheckApiUrl = "http://139.59.11.29:5000"; // Accessing environment variable
       if (!intellicheckApiUrl) {
         throw new Error('Intellicheck API URL is not defined in environment variables.');
       }

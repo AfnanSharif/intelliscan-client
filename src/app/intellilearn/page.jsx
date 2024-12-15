@@ -12,7 +12,7 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false);
 
   // Use the NEXT_PUBLIC_API_URL environment variable
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = "https://intellilearn-74jh2.ondigitalocean.app";
 
   const handleSubmit = async (event) => {
     event.preventDefault();

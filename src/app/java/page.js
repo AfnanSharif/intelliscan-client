@@ -12,6 +12,7 @@ export default function CppPage() {
   const [response, setResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [fileName, setFileName] = useState(''); // State for storing the filename
+  const [pdfUrl, setPdfUrl] = useState(null); // State for the PDF URL
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -35,9 +36,10 @@ export default function CppPage() {
     }
 
     setIsLoading(true); // Set loading to true when submission starts
+    setPdfUrl(null);  // Reset PDF URL
 
     try {
-      const res = await fetch('http://localhost:8001/analyze/', {
+      const res = await fetch('http://139.59.11.29:8000/analyze/', {
         method: 'POST',
         body: formData,
       });
@@ -49,10 +51,12 @@ export default function CppPage() {
       const data = await res.text();
       setResponse(data);
 
-      // Extract the filename from the response if needed
-      const match = data.match(/<a href="\/download\/(.*?)">Download PDF Report<\/a>/);
+      // Extract the filename from the response to create the PDF download URL
+      const match = data.match(/\/download\/(.*?)"/);
       if (match && match[1]) {
-        setFileName(match[1]); // Set the dynamic filename
+        const extractedFileName = match[1];
+        setFileName(extractedFileName);
+        setPdfUrl(`http://139.59.11.29:8000/download/${extractedFileName}`);
       }
     } catch (error) {
       setResponse(`Error: ${error.message}`);
@@ -62,10 +66,10 @@ export default function CppPage() {
   };
 
   const handleDownload = async () => {
-    if (!fileName) return;
+    if (!pdfUrl) return;
 
     try {
-      const response = await fetch(`http://localhost:8001/download/${fileName}`);
+      const response = await fetch(pdfUrl);
       if (!response.ok) {
         throw new Error('Failed to download report');
       }
@@ -98,17 +102,14 @@ export default function CppPage() {
         style={{ filter: "blur(20px)" }}
       />
       <div className="flex flex-col items-center justify-center min-h-screen  p-4 gap-4">
-        {/* <div className="mb-4">
-          <Image src="/intelliscan-logo-unscreen.gif" alt="IntelliScan Logo" width={150} height={50} />
-        </div> */}
         <h1 className="text-5xl font-bold mb-8" style={{ fontFamily: "Arial, sans-serif" }}>
-            <div className="bg-white py-3 px-6 rounded-full shadow-lg flex justify-center items-center">
-              <span className="text-gray-800 font-bold">Check Java</span>
-              <span className="text-blue-800 font-bold">Plagiarism</span>
-            </div>
-          </h1>
+          <div className="bg-white py-3 px-6 rounded-full shadow-lg flex justify-center items-center">
+            <span className="text-gray-800 font-bold">Check Java</span>
+            <span className="text-blue-800 font-bold">Plagiarism</span>
+          </div>
+        </h1>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4 w-full max-w-md">
-        <label htmlFor="file-upload" className={styles.label}>
+          <label htmlFor="file-upload" className={styles.label}>
             Choose File
           </label>
           <input
@@ -121,7 +122,7 @@ export default function CppPage() {
           <textarea
             value={codeSnippet}
             onChange={handleSnippetChange}
-            placeholder="Paste your C++ code snippet here..."
+            placeholder="Paste your java code snippet here..."
             className={styles.textarea}
           />
           <button
@@ -143,9 +144,9 @@ export default function CppPage() {
         )}
 
         {response && (
-          <div className={styles.responseContainer}>
+          <div className={`${styles.responseContainer} mt-4 p-4 bg-white shadow-md rounded-lg`}>
             <div dangerouslySetInnerHTML={{ __html: response }} />
-            {fileName && (
+            {pdfUrl && (
               <button 
                 onClick={handleDownload} 
                 className="mt-4 bg-[#3066be] text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-[#3c3744] transition duration-300"
@@ -155,8 +156,7 @@ export default function CppPage() {
             )}
           </div>
         )}
-        </div>
       </div>
-    
+    </div>
   );
 }
